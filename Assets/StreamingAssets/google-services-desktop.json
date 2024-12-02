@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505641203827",
+    "project_id": "tesst-fa85d",
+    "storage_bucket": "tesst-fa85d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505641203827:android:0eb700e52da9089f471206",
+        "android_client_info": {
+          "package_name": "com.solana.game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZ8GLO_SYwlMueSOvWw5Mg4IuhXddCqPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
