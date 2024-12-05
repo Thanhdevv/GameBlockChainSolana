@@ -17,34 +17,40 @@ public class ScoreManager : MonoBehaviour
     private bool isFirebaseReady = false;
     private void Awake()
     {
-        Instance = this;
-
-        // Khởi tạo Firebase Firestore
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             if (task.Result == Firebase.DependencyStatus.Available)
             {
                 db = FirebaseFirestore.DefaultInstance;
                 isFirebaseReady = true;
+                Debug.Log("Firebase đã sẵn sàng!");
             }
             else
             {
-                Debug.LogError("Firebase không sẵn sàng: " + task.Result);
+                Debug.LogError("Lỗi Firebase: " + task.Result);
             }
         });
     }
 
+    private IEnumerator WaitForFirebaseAndLoadData(string playerId)
+    {
+        while (!isFirebaseReady)
+        {
+            yield return null;
+        }
+        LoadPlayerData(playerId);
+    }
+
     private void Start()
     {
-        // Đợi Firebase sẵn sàng trước khi gọi LoadPlayerData
-        if (isFirebaseReady)
-        {
-            LoadPlayerData("player123"); // Thay "player123" bằng ID người chơi thực tế
-        }
-        else
-        {
-            Debug.LogError("Firebase chưa sẵn sàng khi Start được gọi.");
-        }
+        StartCoroutine(WaitForFirebaseAndLoadData("player123"));
+    }
+    public void UpdateScore(int score)
+    {
+        currentScore += score;
+        FileReadWrite.Instance.UpdateScore(currentScore);
+        FillInf();
+        SaveScoreToFirestore("player123");
     }
     public void UpdateScore(int score)
     {
