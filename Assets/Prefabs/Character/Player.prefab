@@ -2780,7 +2780,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletQuantity: {fileID: 5866224739598609466}
-  itemWeapon: {fileID: 0}
+  itemWeapon: {fileID: 11400000, guid: 34a287b94663a4940a3b0b69184064b7, type: 2}
   iconWeapon: {fileID: 3624466749034456080}
   weapon: {fileID: 2503002950510021783}
   firePos: {fileID: 4604458402177013291}

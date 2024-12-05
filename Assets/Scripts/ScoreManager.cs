@@ -1,7 +1,6 @@
-using Firebase;
+﻿using Firebase;
 using Firebase.Firestore;
 using Firebase.Extensions;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -15,41 +14,46 @@ public class ScoreManager : MonoBehaviour
     private int currentScore;
     private int currentKill;
     private FirebaseFirestore db;
-
+    private bool isFirebaseReady = false;
     private void Awake()
     {
         Instance = this;
 
-        // Kh?i t?o Firebase Firestore
+        // Khởi tạo Firebase Firestore
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             if (task.Result == Firebase.DependencyStatus.Available)
             {
                 db = FirebaseFirestore.DefaultInstance;
+                isFirebaseReady = true;
             }
             else
             {
-                Debug.LogError("Firebase kh�ng s?n s�ng: " + task.Result);
+                Debug.LogError("Firebase không sẵn sàng: " + task.Result);
             }
         });
     }
 
     private void Start()
     {
-        // ??t gi� tr? ban ??u
-        FileReadWrite.Instance.UpdateKill(0);
-        FileReadWrite.Instance.UpdateScore(0);
-        FillInf();
+        // Đợi Firebase sẵn sàng trước khi gọi LoadPlayerData
+        if (isFirebaseReady)
+        {
+            LoadPlayerData("player123"); // Thay "player123" bằng ID người chơi thực tế
+        }
+        else
+        {
+            Debug.LogError("Firebase chưa sẵn sàng khi Start được gọi.");
+        }
     }
-
     public void UpdateScore(int score)
     {
         currentScore += score;
         FileReadWrite.Instance.UpdateScore(currentScore);
         FillInf();
 
-        // L?u ?i?m l�n Firestore
-        SaveScoreToFirestore("player123");  // Thay "player123" b?ng ID ng??i ch?i th?c t?
+        // Lưu điểm lên Firestore
+        SaveScoreToFirestore("player123");  // Thay "player123" bằng ID người chơi thực tế
     }
 
     public void UpdateKill()
@@ -58,8 +62,8 @@ public class ScoreManager : MonoBehaviour
         FileReadWrite.Instance.UpdateKill(currentKill);
         FillInf();
 
-        // L?u s? l??ng gi?t l�n Firestore
-        SaveKillToFirestore("player123");  // Thay "player123" b?ng ID ng??i ch?i th?c t?
+        // Lưu số lượng giết lên Firestore
+        SaveKillToFirestore("player123");  // Thay "player123" bằng ID người chơi thực tế
     }
 
     private void FillInf()
@@ -68,7 +72,7 @@ public class ScoreManager : MonoBehaviour
         fillKill.text = "Kill: " + currentKill;
     }
 
-    // Ph??ng th?c l?u ?i?m l�n Firestore
+    // Phương thức lưu điểm lên Firestore
     private void SaveScoreToFirestore(string playerId)
     {
         DocumentReference playerRef = db.Collection("players").Document(playerId);
@@ -82,16 +86,50 @@ public class ScoreManager : MonoBehaviour
         {
             if (task.IsCompleted)
             {
-                Debug.Log("?i?m v� s? l??ng gi?t ?� ???c l?u l�n Firestore");
+                Debug.Log("Điểm và số lượng giết đã được lưu lên Firestore");
             }
             else
             {
-                Debug.LogError("L?i khi l?u d? li?u l�n Firestore: " + task.Exception);
+                Debug.LogError("Lỗi khi lưu dữ liệu lên Firestore: " + task.Exception);
             }
         });
     }
 
-    // Ph??ng th?c l?u s? l??ng gi?t l�n Firestore
+    // Phương thức lấy dữ liệu từ Firestore
+    private void LoadPlayerData(string playerId)
+    {
+        DocumentReference playerRef = db.Collection("players").Document(playerId);
+        playerRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && task.Result.Exists)
+            {
+                Debug.Log("Dữ liệu người chơi đã được tải");
+                Dictionary<string, object> playerData = task.Result.ToDictionary();
+
+                // Gán giá trị từ Firestore
+                if (playerData.ContainsKey("score"))
+                {
+                    currentScore = System.Convert.ToInt32(playerData["score"]);
+                }
+
+                if (playerData.ContainsKey("kill"))
+                {
+                    currentKill = System.Convert.ToInt32(playerData["kill"]);
+                }
+
+                FillInf(); // Cập nhật giao diện
+            }
+            else
+            {
+                Debug.LogWarning("Dữ liệu người chơi không tồn tại hoặc lỗi xảy ra: " + task.Exception);
+                currentScore = 0;
+                currentKill = 0;
+                FillInf();
+            }
+        });
+    }
+
+    // Phương thức lưu số lượng giết lên Firestore
     private void SaveKillToFirestore(string playerId)
     {
         DocumentReference playerRef = db.Collection("players").Document(playerId);
@@ -104,11 +142,11 @@ public class ScoreManager : MonoBehaviour
         {
             if (task.IsCompleted)
             {
-                Debug.Log("S? l??ng gi?t ?� ???c l?u l�n Firestore");
+                Debug.Log("Số lượng giết đã được lưu lên Firestore");
             }
             else
             {
-                Debug.LogError("L?i khi l?u d? li?u s? l??ng gi?t l�n Firestore: " + task.Exception);
+                Debug.LogError("Lỗi khi lưu dữ liệu số lượng giết lên Firestore: " + task.Exception);
             }
         });
     }

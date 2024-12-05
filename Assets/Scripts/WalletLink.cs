@@ -1,23 +1,45 @@
-using UnityEngine;
-using UnityEngine.UI;
+ï»¿using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class WalletLink : MonoBehaviour
 {
-    // G?n nút b?m vào Unity
-    public Button connectButton;
+    public GameObject connectPanel;
+    private string playerId = "player123"; 
 
     void Start()
     {
-        connectButton.onClick.AddListener(OnConnectButtonClick);
+        if (connectPanel != null)
+        {
+            AddEventTriggerListener(connectPanel, OnConnectPanelClick);
+        }
+        else
+        {
+            Debug.LogError("Connect Panel is not assigned in the inspector!");
+        }
     }
 
-    // Khi nh?n nút, m? liên k?t ??n ví Phantom
-    void OnConnectButtonClick()
+    void OnConnectPanelClick()
     {
-        // URL Deep Link ??n ví Phantom
-        string phantomUrl = "https://phantom.app/"; // ho?c deep link ??n ví Phantom
+        
+        string url = $"http://localhost:3000/playerId={playerId}";
 
-        // M? liên k?t ví Phantom trên trình duy?t
-        Application.OpenURL(phantomUrl);
+       
+        Application.OpenURL(url);
+    }
+
+    private void AddEventTriggerListener(GameObject target, UnityEngine.Events.UnityAction action)
+    {
+        EventTrigger trigger = target.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = target.AddComponent<EventTrigger>();
+        }
+
+        EventTrigger.Entry entry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+        entry.callback.AddListener((eventData) => action());
+        trigger.triggers.Add(entry);
     }
 }

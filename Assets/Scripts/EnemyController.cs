@@ -131,8 +131,8 @@ public class EnemyController : MonoBehaviour
         canvasHealth.transform.gameObject.SetActive(false);
         m_Animator.SetTrigger("die");
         ExpManager.Instance.UpdateExp(experience);
-        int randomScore = Random.Range(minScore, maxScore);
-        ScoreManager.Instance.UpdateScore(randomScore);
+        int randomScsore = Random.Range(minScore, maxScore);
+        ScoreManager.Instance.UpdateScore(randomScsore);
         ScoreManager.Instance.UpdateKill();
         DropItem();
         StartCoroutine(DestroyEnemy());
