@@ -4,10 +4,11 @@ using Firebase.Extensions;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using System.Collections;
 
 public class ScoreManager : MonoBehaviour
 {
-    public static ScoreManager Instance;
+    public static ScoreManager Instance { get; private set; }
     public TextMeshProUGUI fillScore;
     public TextMeshProUGUI fillKill;
 
@@ -17,6 +18,17 @@ public class ScoreManager : MonoBehaviour
     private bool isFirebaseReady = false;
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); 
+        }
+        else
+        {
+            Debug.LogError("ScoreManager.Instance đã tồn tại, phá hủy đối tượng mới!");
+            Destroy(gameObject);
+        }
+
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             if (task.Result == Firebase.DependencyStatus.Available)
@@ -31,38 +43,28 @@ public class ScoreManager : MonoBehaviour
             }
         });
     }
-
     private IEnumerator WaitForFirebaseAndLoadData(string playerId)
     {
         while (!isFirebaseReady)
         {
-            yield return null;
+            yield return null; 
         }
         LoadPlayerData(playerId);
     }
 
     private void Start()
     {
-        StartCoroutine(WaitForFirebaseAndLoadData("player123"));
+        StartCoroutine(WaitForFirebaseAndLoadData("player123")); 
     }
     public void UpdateScore(int score)
     {
         currentScore += score;
         FileReadWrite.Instance.UpdateScore(currentScore);
         FillInf();
-        SaveScoreToFirestore("player123");
-    }
-    public void UpdateScore(int score)
-    {
-        currentScore += score;
-        FileReadWrite.Instance.UpdateScore(currentScore);
-        FillInf();
-
-        // Lưu điểm lên Firestore
-        SaveScoreToFirestore("player123");  // Thay "player123" bằng ID người chơi thực tế
+        SaveScoreToFirestore("player123");  
     }
 
-    public void UpdateKill()
+    public void UpdateKill()//
     {
         currentKill++;
         FileReadWrite.Instance.UpdateKill(currentKill);

@@ -54,18 +54,20 @@ public class EnemyController : MonoBehaviour
     {
         if (isDie) return;
         currentAttackInterval += Time.deltaTime;
-        player = GameObject.Find("Player") != null ? GameObject.Find("Player").transform:null;
+        player = GameObject.Find("Player") != null ? GameObject.Find("Player").transform : null;
         if (player == null)
         {
-            ReturnDefPos(); 
+            ReturnDefPos();
             return;
         }
         float distance = Vector2.Distance(transform.position, player.position);
-        if (distance < distaceTarget) {
+        if (distance < distaceTarget)
+        {
             direction = player.transform.position - transform.position;
             m_Animator.SetBool("isMoving", true);
             transform.position = Vector2.MoveTowards(transform.position, player.transform.position, moveSpeed * Time.deltaTime);
-        } else
+        }
+        else
         {
             ReturnDefPos();
         }
@@ -74,7 +76,8 @@ public class EnemyController : MonoBehaviour
         if (direction.x > 0 && !isFacingRight)
         {
             Flip();
-        } else if (direction.x < 0 && isFacingRight)
+        }
+        else if (direction.x < 0 && isFacingRight)
         {
             Flip();
         }
@@ -123,20 +126,49 @@ public class EnemyController : MonoBehaviour
     }
 
     private void Die()
+{
+    isDie = true;
+
+    // Kiểm tra AudioManager.Instance
+    if (AudioManager.Instance != null)
     {
-        isDie = true;
         AudioManager.Instance.PlaySFXDead();
-        Destroy(gameObject.GetComponent<Rigidbody2D>());
-        Destroy(gameObject.GetComponent<CapsuleCollider2D>());
-        canvasHealth.transform.gameObject.SetActive(false);
-        m_Animator.SetTrigger("die");
-        ExpManager.Instance.UpdateExp(experience);
-        int randomScsore = Random.Range(minScore, maxScore);
-        ScoreManager.Instance.UpdateScore(randomScsore);
-        ScoreManager.Instance.UpdateKill();
-        DropItem();
-        StartCoroutine(DestroyEnemy());
     }
+    else
+    {
+        Debug.LogError("AudioManager.Instance bị null!");
+    }
+
+    // Kiểm tra ExpManager.Instance
+    if (ExpManager.Instance != null)
+    {
+        ExpManager.Instance.UpdateExp(experience);
+    }
+    else
+    {
+        Debug.LogError("ExpManager.Instance bị null!");
+    }
+
+    // Kiểm tra ScoreManager.Instance
+    if (ScoreManager.Instance != null)
+    {
+        int randomScore = Random.Range(minScore, maxScore);
+        ScoreManager.Instance.UpdateScore(randomScore);
+        ScoreManager.Instance.UpdateKill();
+    }
+    else
+    {
+        Debug.LogError("ScoreManager.Instance bị null!");
+    }
+
+    // Các lệnh khác
+    Destroy(gameObject.GetComponent<Rigidbody2D>());
+    Destroy(gameObject.GetComponent<CapsuleCollider2D>());
+    canvasHealth.transform.gameObject.SetActive(false);
+    m_Animator.SetTrigger("die");
+    DropItem();
+    StartCoroutine(DestroyEnemy());
+}
 
     private void DropItem()
     {
@@ -144,7 +176,7 @@ public class EnemyController : MonoBehaviour
         DropItemPrefabs(itemGemPrefabs, dropRateGem, "ItemGem");
     }
 
-    private void DropItemPrefabs(GameObject item,float dropRate,string name)
+    private void DropItemPrefabs(GameObject item, float dropRate, string name)
     {
         if (item == null) return;
         int randomValue = Random.Range(0, 101);
@@ -152,18 +184,19 @@ public class EnemyController : MonoBehaviour
         {
             if (name == "ItemGem")
             {
-                for (int i = 0; i < Random.Range(2,5); i++)
+                for (int i = 0; i < Random.Range(2, 5); i++)
                 {
                     CreateItem(item, name);
                 }
-            } else
+            }
+            else
             {
                 CreateItem(item, name);
             }
         }
     }
 
-    private void CreateItem(GameObject item,string name)
+    private void CreateItem(GameObject item, string name)
     {
         GameObject newItem = Instantiate(item, transform.position, Quaternion.identity);
         newItem.name = name;
